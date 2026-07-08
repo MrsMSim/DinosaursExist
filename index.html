@@ -1019,6 +1019,23 @@ function tokenizePassage(text){
   return text.match(/[A-Za-z']+/g) || [];
 }
 
+function escapeHtml(text){
+  return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderPassageHTML(text){
+  const parts = text.match(/[A-Za-z']+|[^A-Za-z']+/g) || [];
+  let wordIdx = 0;
+  return parts.map(part => {
+    if(/^[A-Za-z']+$/.test(part)){
+      const span = `<span class="pword" data-idx="${wordIdx}">${escapeHtml(part)}</span>`;
+      wordIdx++;
+      return span;
+    }
+    return escapeHtml(part);
+  }).join('');
+}
+
 const passageSelect = document.getElementById('passageSelect');
 const passageBadge = document.getElementById('passageBadge');
 const passageTextEl = document.getElementById('passageText');
@@ -1046,7 +1063,7 @@ function loadPassage(id){
   passageBadge.textContent = PASSAGE_LABELS[id];
   originalTargetWords = tokenizePassage(PASSAGES[id]);
   targetWords = originalTargetWords.map(normalizeWord);
-  passageTextEl.innerHTML = originalTargetWords.map((w, i) => `<span class="pword" data-idx="${i}">${w}</span>`).join(' ');
+  passageTextEl.innerHTML = renderPassageHTML(PASSAGES[id]);
   finalWords = [];
   startTime = null;
   rResultsEl.classList.add('hidden');
